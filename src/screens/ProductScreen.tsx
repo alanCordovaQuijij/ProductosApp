@@ -1,9 +1,12 @@
 import { StackScreenProps } from '@react-navigation/stack'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, StyleSheet, Text, View } from 'react-native'
 import { ProductsStackParams } from '../navigator/ProductsNavigator'
 import { ScrollView, TextInput } from 'react-native-gesture-handler'
 import { Picker } from '@react-native-picker/picker'
+import { useCategories } from '../hooks/useCategories'
+import { useForm } from '../hooks/useForm'
+import { ProductsContext } from '../context/ProductsContext'
 
 interface Props extends StackScreenProps<ProductsStackParams,'ProductScreen'>{};
 
@@ -11,14 +14,37 @@ export const ProductScreen = ({navigation, route}:Props) => {
 
   const {id, name = ''} = route.params;
   const [selectedLanguage, setSelectedLanguage] = useState();
+  const {categories} = useCategories();
+  const {loadProductById} = useContext(ProductsContext);
 
-
+  const {_id, categoriaOd, nombre, img, onChange, setFormValue} = useForm({
+    _id: id,
+    categoriaOd:'',
+    nombre: name,
+    img:''
+  });
 
   useEffect(() => {
     navigation.setOptions({
       title: (name) ? name: 'Nuevo Producto'
     })
   }, [])
+
+  useEffect(() => {
+    loadProduct();
+  }, [])
+  
+
+  const loadProduct = async () => {
+    if(id?.length !== 0) return;
+    const product = await loadProductById(id);
+    setFormValue({
+      _id:id,
+      categoriaOd: product.categoria._id,
+      img: product.img || '',
+      nombre
+    })
+  }
   
 
   return (
@@ -28,6 +54,8 @@ export const ProductScreen = ({navigation, route}:Props) => {
         <TextInput  
           placeholder='Producto'
           style = {styles.textInput}
+          value={nombre}
+          onChangeText={(value) => onChange(value,'nombre')}
         />
 
         <Text style = {styles.label} >Categorías:</Text>
@@ -36,8 +64,17 @@ export const ProductScreen = ({navigation, route}:Props) => {
           onValueChange={(itemValue, itemIndex) =>
             setSelectedLanguage(itemValue)
           }>
-          <Picker.Item label="Java" value="java" />
-          <Picker.Item label="JavaScript" value="js" />
+            {
+
+              categories.map(c => (
+                <Picker.Item 
+                  label= {c.nombre}
+                  value={c._id}
+                  key={c._id}
+                />
+              ))
+
+            }
         </Picker>
 
         <Button 
@@ -58,7 +95,9 @@ export const ProductScreen = ({navigation, route}:Props) => {
 
         </View>
 
+          <Text>
 
+          </Text>
 
       </ScrollView>
     </View>

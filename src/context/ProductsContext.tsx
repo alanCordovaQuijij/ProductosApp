@@ -8,7 +8,7 @@ type ProductsContextProps = {
     addProduct: (categoryId: string, productName: string) => Promise<void>;
     updateProduct: (categoryId: string, productName: string) => Promise<void>;
     deleteProduct: (categoryId: string, productName: string) => Promise<void>;
-    loadProductById: (categoryId: string, productName: string) => Promise<Producto>;
+    loadProductById: (id:string) => Promise<Producto>;
     uploadImage: (data: any, id: string)=> Promise<void>;
 }
 
@@ -47,8 +47,9 @@ export const ProductsProvider = ({children} : any) => {
 
     };
 
-    const loadProductById =async (categoryId: string, productName: string) => {
-        throw new Error ('No implementado')
+    const loadProductById = async (id: string) : Promise<Producto> => {
+        const resp = await cafeApi.get<Producto>(`productos/${id}`);
+        return resp.data
     };
 
     const uploadImage = async (data: any, id: string)=> {
